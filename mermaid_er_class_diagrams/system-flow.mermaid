@@ -1,0 +1,42 @@
+graph TD
+    A[User Enters App] --> B{Is First Time?}
+    B -->|Yes| C[Initial Setup]
+    B -->|No| D[Load Saved Data]
+    C --> E[Main Menu]
+    D --> E
+    
+    E --> F[School Map]
+    F --> G[Navigate to Room]
+    
+    G --> H{Room Type?}
+    H -->|Classroom| I[Load Classroom Resources]
+    H -->|Library| J[Load Library Resources]
+    H -->|Admin Office| K[Load Admin Activities]
+    
+    I --> L[Interactive Activities]
+    J --> L
+    K --> L
+    
+    L --> M{Activity Type?}
+    M -->|Quiz| N[Load Quiz System]
+    M -->|Resource| O[Display Resource]
+    M -->|Chat| P[Open Chat Interface]
+    
+    N --> Q[Submit & Score]
+    O --> R[Mark as Completed]
+    P --> S[Message Processing]
+    
+    Q --> T[Update User Progress]
+    R --> T
+    S --> T
+    
+    T --> U{Online?}
+    U -->|Yes| V[Sync to Server]
+    U -->|No| W[Store Locally]
+    V --> X[Return to Map]
+    W --> X
+    
+    subgraph "Data Flow"
+    Y[Local IndexedDB] <--> Z[Service Worker Cache]
+    Y <-->|When Online| AA[Cloud Sync]
+    end

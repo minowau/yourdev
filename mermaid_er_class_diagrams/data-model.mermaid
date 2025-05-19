@@ -1,0 +1,59 @@
+erDiagram
+    USER {
+        string userId PK
+        string username
+        string avatar
+        date lastLogin
+        object settings
+    }
+    
+    PROGRESS {
+        string userId FK
+        string resourceId FK
+        boolean completed
+        number score
+        date completedAt
+        object answers
+    }
+    
+    RESOURCE {
+        string resourceId PK
+        string type
+        string title
+        string content
+        string roomId FK
+        boolean required
+        date addedAt
+    }
+    
+    ROOM {
+        string roomId PK
+        string name
+        string type
+        string mapData
+        boolean locked
+    }
+    
+    QUIZ {
+        string quizId PK
+        string resourceId FK
+        array questions
+        number passingScore
+        boolean randomOrder
+    }
+    
+    MESSAGE {
+        string messageId PK
+        string userId FK
+        string content
+        date sentAt
+        boolean isGlobal
+        string roomId FK
+    }
+    
+    USER ||--o{ PROGRESS : tracks
+    RESOURCE ||--o{ PROGRESS : generates
+    ROOM ||--o{ RESOURCE : contains
+    RESOURCE ||--o{ QUIZ : includes
+    USER ||--o{ MESSAGE : sends
+    ROOM ||--o{ MESSAGE : contains

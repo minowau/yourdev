@@ -1,0 +1,91 @@
+classDiagram
+    class Game {
+        +config: Object
+        +scenes: Array
+        +init()
+        +start()
+        +pause()
+        +resume()
+    }
+    
+    class Scene {
+        +key: String
+        +assets: Array
+        +entities: Array
+        +create()
+        +update()
+        +destroy()
+    }
+    
+    class Player {
+        -speed: Number
+        -inventory: Array
+        -progress: Object
+        +move(direction)
+        +interact(object)
+        +openInventory()
+        +getProgress()
+    }
+    
+    class InteractiveObject {
+        -type: String
+        -properties: Object
+        -isInteractive: Boolean
+        +onInteract()
+        +update()
+    }
+    
+    class ResourceObject {
+        -resourceType: String
+        -resourceId: String
+        -isComplete: Boolean
+        +loadResource()
+        +markComplete()
+    }
+    
+    class DataManager {
+        -userProfile: Object
+        -courseData: Object
+        -progressData: Object
+        +loadUserData()
+        +saveUserData()
+        +getResources()
+        +updateProgress()
+        +syncWithServer()
+    }
+    
+    class StorageManager {
+        -dbInstance: Object
+        +initialize()
+        +get(key)
+        +set(key, value)
+        +remove(key)
+        +clear()
+    }
+    
+    class ChatSystem {
+        -messages: Array
+        -users: Array
+        +sendMessage(content)
+        +receiveMessage(message)
+        +getHistory()
+    }
+    
+    class QuizSystem {
+        -quizData: Object
+        -userAnswers: Array
+        -score: Number
+        +loadQuiz(id)
+        +submitAnswer(questionId, answer)
+        +calculateScore()
+        +getResults()
+    }
+    
+    Game "1" *-- "many" Scene
+    Scene "1" *-- "1" Player
+    Scene "1" *-- "many" InteractiveObject
+    InteractiveObject <|-- ResourceObject
+    Player "1" -- "1" DataManager
+    DataManager "1" -- "1" StorageManager
+    Scene "1" -- "0..1" ChatSystem
+    ResourceObject "1" -- "0..1" QuizSystem

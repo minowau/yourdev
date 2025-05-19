@@ -1,0 +1,33 @@
+graph TD
+    A[Browser] --> B[IndexedDB]
+    A --> C[Phaser.js Game Engine]
+    
+    C --> D[Game Scenes]
+    D --> E[SchoolMapScene]
+    D --> F[ClassroomScene]
+    D --> G[LibraryScene]
+    
+    C --> H[Game Objects]
+    H --> I[Player]
+    H --> J[Interactive Objects]
+    H --> K[NPCs]
+    
+    C --> L[Physics System]
+    L --> M[Collision Detection]
+    L --> N[Movement]
+    
+    O[Service Worker] --> P[Asset Caching]
+    O --> Q[Offline Functionality]
+    
+    R[DataManager] --> B
+    R --> S[User Progress]
+    R --> T[Content Management]
+    
+    U[UI System] --> V[Chat Interface]
+    U --> W[Resource Viewer]
+    U --> X[Quiz System]
+    
+    Y[SyncManager] -->|When Online| Z[Cloud Server]
+    Z -->|Content Updates| Y
+    
+    R --> Y

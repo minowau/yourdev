@@ -1,0 +1,32 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline 2D Classroom</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container"></div>
+    <div id="ui-overlay" class="hidden">
+        <!-- UI components will be dynamically inserted here -->
+    </div>
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <h2>Loading Classroom...</h2>
+        <p id="loading-progress">0%</p>
+    </div>
+
+    <!-- Load Phaser from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    
+    <!-- Load our game scripts -->
+    <script src="js/config/constants.js"></script>
+    <script src="js/config/game-config.js"></script>
+    <script src="js/scenes/BootScene.js"></script>
+    <script src="js/scenes/MainMenuScene.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

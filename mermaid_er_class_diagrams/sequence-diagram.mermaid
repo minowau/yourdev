@@ -1,0 +1,54 @@
+sequenceDiagram
+    participant User
+    participant UI
+    participant Game
+    participant DataManager
+    participant IndexedDB
+    participant ServiceWorker
+    participant Server
+    
+    User->>UI: Launch Application
+    ServiceWorker->>UI: Intercept Request
+    
+    alt First-time User
+        UI->>User: Show Tutorial
+        User->>UI: Complete Setup
+        UI->>DataManager: Initialize User Data
+        DataManager->>IndexedDB: Create User Profile
+    else Returning User
+        DataManager->>IndexedDB: Load User Data
+        IndexedDB->>DataManager: Return User Data
+        DataManager->>UI: Update UI with User Data
+    end
+    
+    User->>UI: Select Room (Classroom)
+    UI->>Game: Load Classroom Scene
+    Game->>DataManager: Request Resources
+    DataManager->>IndexedDB: Fetch Resources
+    IndexedDB->>DataManager: Return Resources
+    DataManager->>Game: Provide Resources
+    Game->>UI: Render Scene
+    
+    User->>Game: Interact with Resource
+    Game->>UI: Open Resource Viewer
+    UI->>DataManager: Record Interaction
+    DataManager->>IndexedDB: Save Progress
+    
+    User->>UI: Complete Quiz
+    UI->>DataManager: Save Quiz Results
+    DataManager->>IndexedDB: Update Progress
+    
+    alt Online Connection Available
+        DataManager->>Server: Sync Progress
+        Server->>DataManager: Confirm Sync
+        Server->>DataManager: Send Content Updates
+        DataManager->>IndexedDB: Store New Content
+    end
+    
+    User->>UI: Navigate to Different Room
+    UI->>Game: Load New Scene
+    Game->>DataManager: Request Resources
+    DataManager->>IndexedDB: Fetch Resources
+    IndexedDB->>DataManager: Return Resources
+    DataManager->>Game: Provide Resources
+    Game->>UI: Render New Scene
