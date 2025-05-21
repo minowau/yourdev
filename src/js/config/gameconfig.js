@@ -1,8 +1,5 @@
-
-
-
 // Game configuration
-const gameConfig = {
+const gameconfig = {
     type: Phaser.AUTO,
     parent: 'game-container',
     width: GAME_WIDTH,
@@ -13,8 +10,9 @@ const gameConfig = {
     },
     backgroundColor: '#2d2d2d',
     scene: [
-        BootScene,
-        MainMenuScene
+        Booting,
+        MainMenuScene,
+        ClassroomScene
     ],
     physics: {
         default: 'arcade',

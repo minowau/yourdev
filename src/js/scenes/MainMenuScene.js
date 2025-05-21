@@ -1,8 +1,3 @@
-
-
-
-
-
 class MainMenuScene extends Phaser.Scene {
     constructor() {
         super({
@@ -42,7 +37,7 @@ class MainMenuScene extends Phaser.Scene {
         graphics.fillGradientStyle(0x3b76d9, 0x3b76d9, 0x6e8eff, 0x6e8eff, 1);
         graphics.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
         
-        // Add some decorative elements (you can replace with actual images later)
+        // Add some decorative elements
         for (let i = 0; i < 20; i++) {
             const x = Phaser.Math.Between(0, this.cameras.main.width);
             const y = Phaser.Math.Between(0, this.cameras.main.height);
@@ -135,7 +130,6 @@ class MainMenuScene extends Phaser.Scene {
                 })
                 .on('pointerdown', () => {
                     buttonBg.setFillStyle(0x3b76d9, 1);
-                    // Add click sound here if you have one
                 })
                 .on('pointerup', () => {
                     buttonBg.setFillStyle(0x4285f4, 1);
@@ -164,49 +158,22 @@ class MainMenuScene extends Phaser.Scene {
     
     startGame() {
         console.log('Starting game...');
-        // This would transition to your game's first level or map
-        // For now it just logs since we haven't implemented those scenes yet
-        
-        // Display a message to the user
-        const message = this.add.text(
-            this.cameras.main.centerX,
-            this.cameras.main.centerY + 150,
-            'Game starting... (Not implemented yet)',
-            {
-                fontSize: '18px',
-                fontFamily: 'Arial',
-                color: '#ffffff',
-                backgroundColor: '#000000',
-                padding: { x: 10, y: 5 }
-            }
-        );
-        message.setOrigin(0.5);
-        
-        // Make it fade out after a few seconds
-        this.tweens.add({
-            targets: message,
-            alpha: 0,
-            duration: 2000,
-            delay: 1500,
-            onComplete: () => message.destroy()
-        });
+        // Transition to the classroom scene
+        this.scene.start(SCENES.CLASSROOM);
     }
     
     openOptions() {
         console.log('Opening options...');
-        // This would open the options menu
         this.showNotImplementedMessage('Options');
     }
     
     openHelp() {
         console.log('Opening help...');
-        // This would open the help screen
         this.showNotImplementedMessage('Help');
     }
     
     openAbout() {
         console.log('Opening about...');
-        // This would open the about screen
         this.showNotImplementedMessage('About');
     }
     

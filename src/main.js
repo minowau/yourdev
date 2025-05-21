@@ -1,7 +1,7 @@
 // Initialize the game when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     // Create the Phaser game instance with our config
-    const game = new Phaser.Game(gameConfig);
+    const game = new Phaser.Game(gameconfig);
     
     // Handle resize events
     window.addEventListener('resize', () => {
