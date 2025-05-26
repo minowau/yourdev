@@ -7,10 +7,12 @@ class ClassroomScene extends Phaser.Scene {
         this.cursors = null;
         this.wasd = null;
         this.doors = null;
-        this.currentRoom = 'main_corridor';
+        this.currentRoom = 'central_hub';
         this.tutorialShown = false;
         this.roomTexts = {};
         this.interactionPrompts = {};
+        this.mapWidth = 1600;
+        this.mapHeight = 1200;
         
         // Space theme color palette to match the provided image
         this.SPACE_COLORS = {
@@ -35,6 +37,9 @@ class ClassroomScene extends Phaser.Scene {
     }
 
     create() {
+        // Set world bounds to larger map size
+        this.physics.world.setBounds(0, 0, this.mapWidth, this.mapHeight);
+        
         // Create animated starfield background
         this.createStarfield();
         
@@ -44,11 +49,14 @@ class ClassroomScene extends Phaser.Scene {
             this.tutorialShown = true;
         }
         
-        // Create the campus environment
+        // Create the redesigned campus environment
         this.createCampus();
         
         // Create the player
         this.createPlayer();
+        
+        // Set up camera to follow player
+        this.setupCamera();
         
         // Set up controls
         this.setupControls();
@@ -61,16 +69,16 @@ class ClassroomScene extends Phaser.Scene {
     }
     
     createStarfield() {
-        // Create animated starfield background
+        // Create animated starfield background across the larger map
         const graphics = this.add.graphics();
         graphics.fillStyle(this.SPACE_COLORS.BACKGROUND);
-        graphics.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
+        graphics.fillRect(0, 0, this.mapWidth, this.mapHeight);
         
-        // Add animated stars
-        for (let i = 0; i < 100; i++) {
+        // Add animated stars across the larger area
+        for (let i = 0; i < 200; i++) {
             const star = this.add.circle(
-                Phaser.Math.Between(0, this.cameras.main.width),
-                Phaser.Math.Between(0, this.cameras.main.height),
+                Phaser.Math.Between(0, this.mapWidth),
+                Phaser.Math.Between(0, this.mapHeight),
                 Phaser.Math.Between(1, 3),
                 0xffffff,
                 Phaser.Math.FloatBetween(0.3, 0.8)
@@ -88,10 +96,10 @@ class ClassroomScene extends Phaser.Scene {
         }
         
         // Add some larger glowing stars
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 40; i++) {
             const glowStar = this.add.circle(
-                Phaser.Math.Between(0, this.cameras.main.width),
-                Phaser.Math.Between(0, this.cameras.main.height),
+                Phaser.Math.Between(0, this.mapWidth),
+                Phaser.Math.Between(0, this.mapHeight),
                 4,
                 this.SPACE_COLORS.ACCENT_CYAN,
                 0.6
@@ -110,6 +118,13 @@ class ClassroomScene extends Phaser.Scene {
         }
     }
     
+    setupCamera() {
+        // Set camera to follow player smoothly
+        this.cameras.main.startFollow(this.player, true, 0.05, 0.05);
+        this.cameras.main.setBounds(0, 0, this.mapWidth, this.mapHeight);
+        this.cameras.main.setZoom(1);
+    }
+    
     showTutorial() {
         // Create tutorial overlay with space theme
         const tutorialBg = this.add.rectangle(
@@ -121,33 +136,36 @@ class ClassroomScene extends Phaser.Scene {
             0.9
         );
         tutorialBg.setDepth(1000);
+        tutorialBg.setScrollFactor(0);
         
         // Tutorial content panel
         const tutorialPanel = this.add.rectangle(
             this.cameras.main.centerX,
             this.cameras.main.centerY,
             600,
-            400,
+            450,
             this.SPACE_COLORS.UI_PANEL
         );
         tutorialPanel.setDepth(1001);
         tutorialPanel.setStrokeStyle(3, this.SPACE_COLORS.BUTTON_PRIMARY);
+        tutorialPanel.setScrollFactor(0);
         
         // Add glowing effect to panel
         const glowPanel = this.add.rectangle(
             this.cameras.main.centerX,
             this.cameras.main.centerY,
             610,
-            410,
+            460,
             this.SPACE_COLORS.BUTTON_PRIMARY,
             0.3
         );
         glowPanel.setDepth(1000);
+        glowPanel.setScrollFactor(0);
         
         // Tutorial title with glow effect
         const title = this.add.text(
             this.cameras.main.centerX,
-            this.cameras.main.centerY - 150,
+            this.cameras.main.centerY - 180,
             '🚀 Welcome to OFFSIKSHA Space Campus! 🌌',
             {
                 fontSize: '24px',
@@ -155,24 +173,32 @@ class ClassroomScene extends Phaser.Scene {
                 color: this.SPACE_COLORS.TEXT_PRIMARY,
                 fontStyle: 'bold'
             }
-        ).setOrigin(0.5).setDepth(1002);
+        ).setOrigin(0.5).setDepth(1002).setScrollFactor(0);
         
         // Tutorial instructions
         const instructions = [
             '🎮 Navigation Controls:',
             '   • Use ARROW KEYS or WASD to navigate the space station',
+            '   • Camera follows your space explorer smoothly',
             '   • Approach green airlocks to see interaction prompts',
             '',
-            '🏫 Space Station Modules:',
+            '🏫 Space Station Hub Layout:',
+            '   • Central Hub - Main meeting and coordination area',
             '   • AI/ML Lab - Advanced artificial intelligence research',
-            '   • Network Center - Quantum communication systems',
+            '   • Network Center - Quantum communication & collaboration',
             '   • Digital Library - Galactic knowledge database',
-            '   • Computer Lab - Programming in zero gravity',
+            '   • Computer Lab - Programming classroom with modern setup',
+            '',
+            '👥 Multiplayer Features:',
+            '   • Wide corridors for multiple explorers',
+            '   • Open areas for group interactions',
+            '   • Modern classroom layouts for collaboration',
             '',
             '💡 Space Explorer Tips:',
             '   • Green airlocks lead to specialized modules',
             '   • Press E to enter modules when prompted',
-            '   • ESC returns to mission control'
+            '   • ESC returns to mission control',
+            '   • Explore the larger map area!'
         ];
         
         this.add.text(
@@ -180,18 +206,18 @@ class ClassroomScene extends Phaser.Scene {
             this.cameras.main.centerY - 50,
             instructions.join('\n'),
             {
-                fontSize: '14px',
+                fontSize: '13px',
                 fontFamily: 'Arial',
                 color: this.SPACE_COLORS.TEXT_SECONDARY,
                 align: 'left',
-                lineSpacing: 5
+                lineSpacing: 4
             }
-        ).setOrigin(0.5).setDepth(1002);
+        ).setOrigin(0.5).setDepth(1002).setScrollFactor(0);
         
         // Start button with hover effects
         const startButton = this.add.text(
             this.cameras.main.centerX,
-            this.cameras.main.centerY + 140,
+            this.cameras.main.centerY + 170,
             '🚀 Begin Space Mission →',
             {
                 fontSize: '18px',
@@ -201,7 +227,7 @@ class ClassroomScene extends Phaser.Scene {
                 padding: { x: 20, y: 10 }
             }
         );
-        startButton.setOrigin(0.5).setDepth(1002);
+        startButton.setOrigin(0.5).setDepth(1002).setScrollFactor(0);
         startButton.setInteractive({ useHandCursor: true });
         
         // Add hover effects
@@ -219,24 +245,29 @@ class ClassroomScene extends Phaser.Scene {
             tutorialBg.destroy();
             tutorialPanel.destroy();
             glowPanel.destroy();
+            title.destroy();
             startButton.destroy();
         });
     }
     
     createCampus() {
-        // Create space station background
+        // Create larger space station background
         const graphics = this.add.graphics();
-        graphics.fillStyle(this.SPACE_COLORS.CORRIDOR);
-        graphics.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
+        graphics.fillStyle(this.SPACE_COLORS.BACKGROUND);
+        graphics.fillRect(0, 0, this.mapWidth, this.mapHeight);
         
-        // Create space station structure
+        // Create redesigned space station structure with central hub
         this.createSpaceStationStructure(graphics);
         
-        // Create specialized modules
+        // Create specialized modules around the hub
+        this.createCentralHub(graphics);
         this.createAIMLLab(graphics);
         this.createNetworkingCenter(graphics);
         this.createLibrary(graphics);
         this.createComputerLab(graphics);
+        
+        // Create connecting corridors
+        this.createCorridors(graphics);
         
         // Create airlocks and interaction zones
         this.createAirlocks();
@@ -252,172 +283,244 @@ class ClassroomScene extends Phaser.Scene {
     }
     
     createSpaceStationStructure(graphics) {
-        // Main corridor floors with metallic appearance
+        // Main station floor with metallic appearance
         graphics.fillStyle(this.SPACE_COLORS.FLOOR);
-        graphics.fillRect(50, 150, this.cameras.main.width - 100, 100); // Horizontal corridor
-        graphics.fillRect(200, 50, 100, this.cameras.main.height - 100); // Vertical corridor left
-        graphics.fillRect(900, 50, 100, this.cameras.main.height - 100); // Vertical corridor right
+        graphics.fillRect(100, 100, this.mapWidth - 200, this.mapHeight - 200);
         
-        // Add corridor lighting effects
+        // Add station lighting effects - horizontal strips
         graphics.fillStyle(this.SPACE_COLORS.ACCENT_CYAN, 0.3);
-        graphics.fillRect(60, 160, this.cameras.main.width - 120, 10); // Top light strip
-        graphics.fillRect(60, 230, this.cameras.main.width - 120, 10); // Bottom light strip
-        graphics.fillRect(210, 60, 10, this.cameras.main.height - 120); // Left corridor light
-        graphics.fillRect(280, 60, 10, this.cameras.main.height - 120); // Left corridor light
-        graphics.fillRect(910, 60, 10, this.cameras.main.height - 120); // Right corridor light
-        graphics.fillRect(980, 60, 10, this.cameras.main.height - 120); // Right corridor light
+        for (let y = 150; y < this.mapHeight - 150; y += 100) {
+            graphics.fillRect(120, y, this.mapWidth - 240, 8);
+        }
         
-        // Space station walls with metallic look
-        graphics.fillStyle(this.SPACE_COLORS.WALL);
-        // Horizontal corridor walls
-        graphics.fillRect(50, 140, this.cameras.main.width - 100, 10);
-        graphics.fillRect(50, 250, this.cameras.main.width - 100, 10);
-        
-        // Vertical corridor walls
-        graphics.fillRect(190, 50, 10, this.cameras.main.height - 100);
-        graphics.fillRect(300, 50, 10, this.cameras.main.height - 100);
-        graphics.fillRect(890, 50, 10, this.cameras.main.height - 100);
-        graphics.fillRect(1000, 50, 10, this.cameras.main.height - 100);
+        // Add station lighting effects - vertical strips
+        for (let x = 200; x < this.mapWidth - 200; x += 150) {
+            graphics.fillRect(x, 120, 8, this.mapHeight - 240);
+        }
         
         // Outer hull
         graphics.fillStyle(this.SPACE_COLORS.WALL);
-        graphics.fillRect(0, 0, this.cameras.main.width, 20);
-        graphics.fillRect(0, this.cameras.main.height - 20, this.cameras.main.width, 20);
-        graphics.fillRect(0, 0, 20, this.cameras.main.height);
-        graphics.fillRect(this.cameras.main.width - 20, 0, 20, this.cameras.main.height);
+        graphics.fillRect(0, 0, this.mapWidth, 50);
+        graphics.fillRect(0, this.mapHeight - 50, this.mapWidth, 50);
+        graphics.fillRect(0, 0, 50, this.mapHeight);
+        graphics.fillRect(this.mapWidth - 50, 0, 50, this.mapHeight);
+    }
+    
+    createCentralHub(graphics) {
+        // Large central hub for meetings and coordination
+        const hubX = this.mapWidth / 2 - 150;
+        const hubY = this.mapHeight / 2 - 100;
+        
+        graphics.fillStyle(this.SPACE_COLORS.CORRIDOR);
+        graphics.fillEllipse(hubX + 150, hubY + 100, 300, 200);
+        
+        // Hub floor with special pattern
+        graphics.fillStyle(this.SPACE_COLORS.FLOOR);
+        graphics.fillEllipse(hubX + 150, hubY + 100, 280, 180);
+        
+        // Central holographic display
+        graphics.fillStyle(this.SPACE_COLORS.ACCENT_CYAN, 0.8);
+        graphics.fillEllipse(hubX + 150, hubY + 100, 80, 80);
+        
+        // Meeting areas around the hub
+        const meetingAreas = [
+            { x: hubX + 50, y: hubY + 50 },
+            { x: hubX + 250, y: hubY + 50 },
+            { x: hubX + 50, y: hubY + 150 },
+            { x: hubX + 250, y: hubY + 150 }
+        ];
+        
+        meetingAreas.forEach(area => {
+            graphics.fillStyle(this.SPACE_COLORS.PLATFORM_GREEN);
+            graphics.fillRect(area.x, area.y, 40, 20);
+        });
+    }
+    
+    createCorridors(graphics) {
+        // Wide corridors connecting all areas
+        graphics.fillStyle(this.SPACE_COLORS.CORRIDOR);
+        
+        // Main horizontal corridors
+        graphics.fillRect(100, 200, this.mapWidth - 200, 80); // Upper corridor
+        graphics.fillRect(100, this.mapHeight - 280, this.mapWidth - 200, 80); // Lower corridor
+        
+        // Main vertical corridors
+        graphics.fillRect(200, 100, 80, this.mapHeight - 200); // Left corridor
+        graphics.fillRect(this.mapWidth - 280, 100, 80, this.mapHeight - 200); // Right corridor
+        
+        // Cross corridors
+        graphics.fillRect(100, this.mapHeight/2 - 40, this.mapWidth - 200, 80); // Middle horizontal
+        graphics.fillRect(this.mapWidth/2 - 40, 100, 80, this.mapHeight - 200); // Middle vertical
+        
+        // Add corridor lighting
+        graphics.fillStyle(this.SPACE_COLORS.ACCENT_CYAN, 0.4);
+        // Horizontal corridor lights
+        graphics.fillRect(110, 210, this.mapWidth - 220, 6);
+        graphics.fillRect(110, 264, this.mapWidth - 220, 6);
+        graphics.fillRect(110, this.mapHeight - 270, this.mapWidth - 220, 6);
+        graphics.fillRect(110, this.mapHeight - 216, this.mapWidth - 220, 6);
+        graphics.fillRect(110, this.mapHeight/2 - 30, this.mapWidth - 220, 6);
+        graphics.fillRect(110, this.mapHeight/2 + 24, this.mapWidth - 220, 6);
+        
+        // Vertical corridor lights
+        graphics.fillRect(210, 110, 6, this.mapHeight - 220);
+        graphics.fillRect(264, 110, 6, this.mapHeight - 220);
+        graphics.fillRect(this.mapWidth - 270, 110, 6, this.mapHeight - 220);
+        graphics.fillRect(this.mapWidth - 216, 110, 6, this.mapHeight - 220);
+        graphics.fillRect(this.mapWidth/2 - 30, 110, 6, this.mapHeight - 220);
+        graphics.fillRect(this.mapWidth/2 + 24, 110, 6, this.mapHeight - 220);
     }
     
     createAIMLLab(graphics) {
-        // AI/ML Lab with futuristic design
+        // AI/ML Lab in upper left with modern classroom layout
+        const labX = 300;
+        const labY = 300;
+        
         graphics.fillStyle(this.SPACE_COLORS.FLOOR);
-        graphics.fillRect(50, 50, 140, 90);
+        graphics.fillRect(labX, labY, 200, 150);
         
-        // Lab walls
-        graphics.fillStyle(this.SPACE_COLORS.WALL);
-        graphics.fillRect(50, 50, 140, 10);
-        graphics.fillRect(50, 50, 10, 90);
-        graphics.fillRect(180, 50, 10, 40);
-        graphics.fillRect(180, 130, 10, 10);
-        
-        // High-tech AI equipment with glowing effects
+        // Modern classroom setup - workstation pods
         graphics.fillStyle(this.SPACE_COLORS.ACCENT_PURPLE);
-        graphics.fillRect(60, 60, 20, 15); // Quantum processor
-        graphics.fillRect(90, 60, 20, 15); // Neural network unit
-        graphics.fillRect(120, 60, 20, 15); // AI workstation
+        const workstations = [
+            { x: labX + 20, y: labY + 20 },
+            { x: labX + 80, y: labY + 20 },
+            { x: labX + 140, y: labY + 20 },
+            { x: labX + 20, y: labY + 70 },
+            { x: labX + 80, y: labY + 70 },
+            { x: labX + 140, y: labY + 70 }
+        ];
         
-        // Holographic display
-        graphics.fillStyle(this.SPACE_COLORS.ACCENT_CYAN, 0.7);
-        graphics.fillRect(70, 110, 80, 20);
+        workstations.forEach(ws => {
+            graphics.fillRect(ws.x, ws.y, 35, 25);
+        });
         
-        // Add glowing accents
-        graphics.fillStyle(this.SPACE_COLORS.BUTTON_PRIMARY, 0.5);
-        graphics.fillRect(58, 58, 24, 19);
-        graphics.fillRect(88, 58, 24, 19);
-        graphics.fillRect(118, 58, 24, 19);
+        // Interactive whiteboard/display
+        graphics.fillStyle(this.SPACE_COLORS.ACCENT_CYAN, 0.8);
+        graphics.fillRect(labX + 20, labY + 110, 160, 30);
+        
+        // Add glowing effects
+        graphics.fillStyle(this.SPACE_COLORS.BUTTON_PRIMARY, 0.3);
+        workstations.forEach(ws => {
+            graphics.fillRect(ws.x - 2, ws.y - 2, 39, 29);
+        });
     }
     
     createNetworkingCenter(graphics) {
-        // Networking Center with cyberpunk aesthetic
+        // Networking Center in upper right - open collaboration space
+        const netX = this.mapWidth - 500;
+        const netY = 300;
+        
         graphics.fillStyle(this.SPACE_COLORS.FLOOR);
-        graphics.fillRect(1010, 50, 140, 90);
+        graphics.fillRect(netX, netY, 200, 150);
         
-        // Center walls
-        graphics.fillStyle(this.SPACE_COLORS.WALL);
-        graphics.fillRect(1010, 50, 140, 10);
-        graphics.fillRect(1140, 50, 10, 90);
-        graphics.fillRect(1000, 50, 10, 40);
-        graphics.fillRect(1000, 130, 10, 10);
-        
-        // Advanced networking equipment
+        // Collaborative seating arrangement
         graphics.fillStyle(this.SPACE_COLORS.DECORATION_ORANGE);
-        graphics.fillRect(1020, 60, 25, 10); // Quantum router
-        graphics.fillRect(1055, 60, 25, 10); // Hypernet switch
-        graphics.fillRect(1090, 60, 25, 10); // Data server
-        graphics.fillRect(1125, 60, 15, 25); // Network tower
+        // Round table setup for networking
+        graphics.fillEllipse(netX + 100, netY + 75, 60, 60);
         
-        // Network visualization display
-        graphics.fillStyle(this.SPACE_COLORS.BUTTON_SECONDARY, 0.8);
-        graphics.fillRect(1030, 110, 80, 20);
+        // Surrounding chairs/workspaces
+        const chairs = [
+            { x: netX + 70, y: netY + 30 },
+            { x: netX + 130, y: netY + 30 },
+            { x: netX + 160, y: netY + 75 },
+            { x: netX + 130, y: netY + 120 },
+            { x: netX + 70, y: netY + 120 },
+            { x: netX + 40, y: netY + 75 }
+        ];
         
-        // Add glowing network indicators
+        chairs.forEach(chair => {
+            graphics.fillEllipse(chair.x, chair.y, 20, 20);
+        });
+        
+        // Network visualization displays
         graphics.fillStyle(this.SPACE_COLORS.ACCENT_CYAN, 0.6);
-        graphics.fillRect(1018, 58, 29, 14);
-        graphics.fillRect(1053, 58, 29, 14);
-        graphics.fillRect(1088, 58, 29, 14);
+        graphics.fillRect(netX + 20, netY + 20, 40, 30);
+        graphics.fillRect(netX + 140, netY + 20, 40, 30);
     }
     
     createLibrary(graphics) {
-        // Digital Library with holographic storage
+        // Digital Library in lower left
+        const libX = 300;
+        const libY = this.mapHeight - 450;
+        
         graphics.fillStyle(this.SPACE_COLORS.FLOOR);
-        graphics.fillRect(50, 260, 140, 90);
+        graphics.fillRect(libX, libY, 200, 150);
         
-        // Library walls
-        graphics.fillStyle(this.SPACE_COLORS.WALL);
-        graphics.fillRect(50, 260, 10, 90);
-        graphics.fillRect(50, 340, 140, 10);
-        graphics.fillRect(180, 260, 10, 40);
-        graphics.fillRect(180, 340, 10, 10);
-        
-        // Holographic data storage units
+        // Modern library layout with reading pods
         graphics.fillStyle(this.SPACE_COLORS.ACCENT_PURPLE, 0.8);
-        graphics.fillRect(60, 270, 15, 60);
-        graphics.fillRect(85, 270, 15, 60);
-        graphics.fillRect(110, 270, 15, 60);
-        graphics.fillRect(135, 270, 15, 60);
         
-        // Interactive learning pod
+        // Individual study pods
+        const studyPods = [
+            { x: libX + 20, y: libY + 20 },
+            { x: libX + 70, y: libY + 20 },
+            { x: libX + 120, y: libY + 20 },
+            { x: libX + 20, y: libY + 60 },
+            { x: libX + 120, y: libY + 60 }
+        ];
+        
+        studyPods.forEach(pod => {
+            graphics.fillEllipse(pod.x + 15, pod.y + 15, 30, 30);
+        });
+        
+        // Central resource hub
         graphics.fillStyle(this.SPACE_COLORS.ACCENT_CYAN);
-        graphics.fillRect(155, 285, 25, 30);
+        graphics.fillRect(libX + 60, libY + 100, 80, 40);
         
-        // Add data stream effects
-        graphics.fillStyle(this.SPACE_COLORS.BUTTON_PRIMARY, 0.4);
-        for (let i = 0; i < 4; i++) {
-            graphics.fillRect(58 + i * 25, 268, 19, 64);
-        }
+        // Digital resource terminals
+        graphics.fillStyle(this.SPACE_COLORS.BUTTON_PRIMARY, 0.6);
+        graphics.fillRect(libX + 150, libY + 30, 25, 20);
+        graphics.fillRect(libX + 150, libY + 70, 25, 20);
+        graphics.fillRect(libX + 150, libY + 110, 25, 20);
     }
     
     createComputerLab(graphics) {
-        // Computer Lab with futuristic workstations
+        // Computer Lab in lower right with modern classroom setup
+        const compX = this.mapWidth - 500;
+        const compY = this.mapHeight - 450;
+        
         graphics.fillStyle(this.SPACE_COLORS.FLOOR);
-        graphics.fillRect(1010, 260, 140, 90);
+        graphics.fillRect(compX, compY, 200, 150);
         
-        // Lab walls
-        graphics.fillStyle(this.SPACE_COLORS.WALL);
-        graphics.fillRect(1140, 260, 10, 90);
-        graphics.fillRect(1010, 340, 140, 10);
-        graphics.fillRect(1000, 260, 10, 40);
-        graphics.fillRect(1000, 340, 10, 10);
-        
-        // Advanced computer workstations
+        // Modern computer classroom - U-shaped arrangement
         graphics.fillStyle(this.SPACE_COLORS.DECORATION_PINK);
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 2; j++) {
-                graphics.fillRect(1020 + i * 35, 270 + j * 35, 25, 20);
-            }
+        
+        // Left row
+        for (let i = 0; i < 4; i++) {
+            graphics.fillRect(compX + 20, compY + 20 + i * 30, 30, 20);
         }
         
-        // Central server cluster
+        // Right row
+        for (let i = 0; i < 4; i++) {
+            graphics.fillRect(compX + 150, compY + 20 + i * 30, 30, 20);
+        }
+        
+        // Back row
+        for (let i = 0; i < 3; i++) {
+            graphics.fillRect(compX + 60 + i * 30, compY + 20, 20, 30);
+        }
+        
+        // Instructor station
         graphics.fillStyle(this.SPACE_COLORS.ACCENT_PURPLE);
-        graphics.fillRect(1120, 270, 20, 60);
+        graphics.fillRect(compX + 80, compY + 110, 40, 30);
         
         // Add holographic displays
         graphics.fillStyle(this.SPACE_COLORS.ACCENT_CYAN, 0.5);
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 2; j++) {
-                graphics.fillRect(1018 + i * 35, 268 + j * 35, 29, 24);
-            }
+        // Display above each workstation
+        for (let i = 0; i < 4; i++) {
+            graphics.fillRect(compX + 18, compY + 18 + i * 30, 34, 24);
+            graphics.fillRect(compX + 148, compY + 18 + i * 30, 34, 24);
         }
     }
     
     createAirlocks() {
         this.doors = this.physics.add.staticGroup();
         
-        // Airlock positions with glowing green design
+        // Airlock positions connecting to corridors
         const airlockData = [
-            { x: 190, y: 95, width: 20, height: 40, room: 'ai_ml', label: 'AI/ML Lab' },
-            { x: 990, y: 95, width: 20, height: 40, room: 'networking', label: 'Network Center' },
-            { x: 190, y: 300, width: 20, height: 40, room: 'library', label: 'Digital Library' },
-            { x: 990, y: 300, width: 20, height: 40, room: 'computer_lab', label: 'Computer Lab' }
+            { x: 280, y: 375, width: 20, height: 30, room: 'ai_ml', label: 'AI/ML Lab' },
+            { x: this.mapWidth - 280, y: 375, width: 20, height: 30, room: 'networking', label: 'Network Center' },
+            { x: 280, y: this.mapHeight - 375, width: 20, height: 30, room: 'library', label: 'Digital Library' },
+            { x: this.mapWidth - 280, y: this.mapHeight - 375, width: 20, height: 30, room: 'computer_lab', label: 'Computer Lab' }
         ];
         
         airlockData.forEach(airlock => {
@@ -454,8 +557,8 @@ class ClassroomScene extends Phaser.Scene {
             const airlockBody = this.add.rectangle(
                 airlock.x + airlock.width/2, 
                 airlock.y + airlock.height/2, 
-                airlock.width + 40, 
-                airlock.height + 40
+                airlock.width + 60, 
+                airlock.height + 60
             );
             airlockBody.setVisible(false);
             this.physics.add.existing(airlockBody, true);
@@ -465,90 +568,39 @@ class ClassroomScene extends Phaser.Scene {
         });
     }
     
-    addSpaceDecorations() {
-        // Add floating platforms and space debris
-        const decorations = [
-            { x: 400, y: 120, color: this.SPACE_COLORS.PLATFORM_GREEN },
-            { x: 700, y: 120, color: this.SPACE_COLORS.PLATFORM_GREEN },
-            { x: 400, y: 320, color: this.SPACE_COLORS.PLATFORM_GREEN },
-            { x: 700, y: 320, color: this.SPACE_COLORS.PLATFORM_GREEN }
-        ];
-        
-        decorations.forEach(deco => {
-            const platform = this.add.rectangle(deco.x, deco.y, 80, 15, deco.color);
-            
-            // Add floating animation
-            this.tweens.add({
-                targets: platform,
-                y: deco.y + 5,
-                duration: 2000,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
-        });
-        
-        // Add energy crystals
-        for (let i = 0; i < 10; i++) {
-            const crystal = this.add.polygon(
-                Phaser.Math.Between(100, this.cameras.main.width - 100),
-                Phaser.Math.Between(100, this.cameras.main.height - 100),
-                6, 8, this.SPACE_COLORS.DECORATION_PINK, 0.6
-            );
-            
-            this.tweens.add({
-                targets: crystal,
-                angle: 360,
-                duration: 4000,
-                repeat: -1,
-                ease: 'Linear'
-            });
-        }
-    }
-    
     createPhysicsWalls() {
         this.walls = this.physics.add.staticGroup();
         
-        // Create collision bodies for all walls (same structure as before)
         const wallData = [
             // Outer walls
-            { x: this.cameras.main.centerX, y: 10, width: this.cameras.main.width, height: 20 },
-            { x: this.cameras.main.centerX, y: this.cameras.main.height - 10, width: this.cameras.main.width, height: 20 },
-            { x: 10, y: this.cameras.main.centerY, width: 20, height: this.cameras.main.height },
-            { x: this.cameras.main.width - 10, y: this.cameras.main.centerY, width: 20, height: this.cameras.main.height },
+            { x: this.mapWidth/2, y: 25, width: this.mapWidth, height: 50 },
+            { x: this.mapWidth/2, y: this.mapHeight - 25, width: this.mapWidth, height: 50 },
+            { x: 25, y: this.mapHeight/2, width: 50, height: this.mapHeight },
+            { x: this.mapWidth - 25, y: this.mapHeight/2, width: 50, height: this.mapHeight },
             
-            // Corridor walls
-            { x: this.cameras.main.centerX, y: 145, width: this.cameras.main.width - 100, height: 10 },
-            { x: this.cameras.main.centerX, y: 255, width: this.cameras.main.width - 100, height: 10 },
-            { x: 195, y: this.cameras.main.centerY, width: 10, height: this.cameras.main.height - 100 },
-            { x: 305, y: this.cameras.main.centerY, width: 10, height: this.cameras.main.height - 100 },
-            { x: 895, y: this.cameras.main.centerY, width: 10, height: this.cameras.main.height - 100 },
-            { x: 1005, y: this.cameras.main.centerY, width: 10, height: this.cameras.main.height - 100 },
+            // AI/ML Lab walls
+            { x: 300, y: 290, width: 200, height: 20 },
+            { x: 290, y: 375, width: 20, height: 150 },
+            { x: 510, y: 375, width: 20, height: 150 },
+            { x: 400, y: 460, width: 200, height: 20 },
             
-            // Room walls (excluding door areas)
-            // AI/ML room
-            { x: 120, y: 55, width: 140, height: 10 },
-            { x: 55, y: 95, width: 10, height: 90 },
-            { x: 185, y: 70, width: 10, height: 40 },
-            { x: 185, y: 135, width: 10, height: 10 },
+            // Networking Center walls
+            { x: this.mapWidth - 400, y: 290, width: 200, height: 20 },
+            { x: this.mapWidth - 510, y: 375, width: 20, height: 150 },
+            { x: this.mapWidth - 290, y: 375, width: 20, height: 150 },
+            { x: this.mapWidth - 400, y: 460, width: 200, height: 20 },
             
-            // Networking room
-            { x: 1080, y: 55, width: 140, height: 10 },
-            { x: 1145, y: 95, width: 10, height: 90 },
-            { x: 1005, y: 70, width: 10, height: 40 },
-            { x: 1005, y: 135, width: 10, height: 10 },
+            // Library walls
+            { x: 300, y: this.mapHeight - 460, width: 200, height: 20 },
+            { x: 290, y: this.mapHeight - 375, width: 20, height: 130 },
+            { x: 510, y: this.mapHeight - 375, width: 20, height: 130 },
+            { x: 400, y: this.mapHeight - 290, width: 200, height: 20 },
             
-            // Library
-            { x: 55, y: 305, width: 10, height: 90 },
-            { x: 120, y: 345, width: 140, height: 10 },
-            { x: 185, y: 280, width: 10, height: 40 },
-            { x: 185, y: 345, width: 10, height: 10 },
-            
-            // Computer Lab
-            { x: 1145, y: 305, width: 10, height: 90 },
-            { x: 1080, y: 345, width: 140, height: 10 },
-            { x: 1005, y: 280, width: 10, height: 40 },
-            { x: 1005, y: 345, width: 10, height: 10 }
+            // Computer Lab walls
+            { x: this.mapWidth - 400, y: this.mapHeight - 460, width: 200, height: 20 },
+            { x: this.mapWidth - 510, y: this.mapHeight - 375, width: 20, height: 130 },
+            { x: this.mapWidth - 290, y: this.mapHeight - 375, width: 20, height: 130 },
+            { x: this.mapWidth - 400, y: this.mapHeight - 290, width: 200, height: 20 }
         ];
         
         wallData.forEach(wall => {
@@ -562,20 +614,24 @@ class ClassroomScene extends Phaser.Scene {
     addModuleLabels() {
         // Module labels with futuristic styling
         this.roomTexts = {
-            ai_ml: this.add.text(120, 75, '🤖 AI/ML LAB', {
-                fontSize: '12px', fontFamily: 'Arial', color: this.SPACE_COLORS.TEXT_PRIMARY, fontStyle: 'bold'
+            central_hub: this.add.text(this.mapWidth/2, this.mapHeight/2 - 50, '🌌 CENTRAL HUB', {
+                fontSize: '18px', fontFamily: 'Arial', color: this.SPACE_COLORS.TEXT_PRIMARY, fontStyle: 'bold'
             }).setOrigin(0.5),
             
-            networking: this.add.text(1080, 75, '🌐 NETWORK CENTER', {
-                fontSize: '12px', fontFamily: 'Arial', color: this.SPACE_COLORS.TEXT_PRIMARY, fontStyle: 'bold'
+            ai_ml: this.add.text(400, 320, '🤖 AI/ML LAB', {
+                fontSize: '14px', fontFamily: 'Arial', color: this.SPACE_COLORS.TEXT_PRIMARY, fontStyle: 'bold'
             }).setOrigin(0.5),
             
-            library: this.add.text(120, 285, '📚 DIGITAL LIBRARY', {
-                fontSize: '12px', fontFamily: 'Arial', color: this.SPACE_COLORS.TEXT_PRIMARY, fontStyle: 'bold'
+            networking: this.add.text(this.mapWidth - 400, 320, '🌐 NETWORK CENTER', {
+                fontSize: '14px', fontFamily: 'Arial', color: this.SPACE_COLORS.TEXT_PRIMARY, fontStyle: 'bold'
             }).setOrigin(0.5),
             
-            computer_lab: this.add.text(1080, 285, '💻 COMPUTER LAB', {
-                fontSize: '12px', fontFamily: 'Arial', color: this.SPACE_COLORS.TEXT_PRIMARY, fontStyle: 'bold'
+            library: this.add.text(400, this.mapHeight - 375, '📚 DIGITAL LIBRARY', {
+                fontSize: '14px', fontFamily: 'Arial', color: this.SPACE_COLORS.TEXT_PRIMARY, fontStyle: 'bold'
+            }).setOrigin(0.5),
+            
+            computer_lab: this.add.text(this.mapWidth - 400, this.mapHeight - 375, '💻 COMPUTER LAB', {
+                fontSize: '14px', fontFamily: 'Arial', color: this.SPACE_COLORS.TEXT_PRIMARY, fontStyle: 'bold'
             }).setOrigin(0.5)
         };
         
@@ -586,12 +642,13 @@ class ClassroomScene extends Phaser.Scene {
         });
         
         // Space station title
+       
         const title = this.add.text(
-            this.cameras.main.centerX,
-            30,
+            this.mapWidth/2,
+            80,
             '🚀 OFFSIKSHA SPACE STATION 🌌',
             {
-                fontSize: '24px',
+                fontSize: '28px',
                 fontFamily: 'Arial',
                 color: this.SPACE_COLORS.TEXT_PRIMARY,
                 fontStyle: 'bold'
@@ -600,53 +657,197 @@ class ClassroomScene extends Phaser.Scene {
         
         title.setStroke(this.SPACE_COLORS.ACCENT_CYAN, 3);
         title.setShadow(0, 0, this.SPACE_COLORS.ACCENT_CYAN, 5);
+        
+        // Add pulsing animation to title
+        this.tweens.add({
+            targets: title,
+            scaleX: { from: 1, to: 1.05 },
+            scaleY: { from: 1, to: 1.05 },
+            duration: 2000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+    }
+    
+    addSpaceDecorations() {
+        // Add various space-themed decorations throughout the station
+        
+        // Holographic terminals in corridors
+        const terminalPositions = [
+            { x: 150, y: 240 }, { x: 350, y: 240 }, { x: 550, y: 240 },
+            { x: this.mapWidth - 150, y: 240 }, { x: this.mapWidth - 350, y: 240 },
+            { x: 150, y: this.mapHeight - 240 }, { x: 350, y: this.mapHeight - 240 },
+            { x: this.mapWidth - 150, y: this.mapHeight - 240 }
+        ];
+        
+        terminalPositions.forEach(pos => {
+            // Terminal base
+            const terminal = this.add.rectangle(pos.x, pos.y, 20, 30, this.SPACE_COLORS.UI_PANEL);
+            
+            // Holographic display
+            const display = this.add.rectangle(pos.x, pos.y - 15, 18, 12, this.SPACE_COLORS.ACCENT_CYAN, 0.7);
+            
+            // Add flickering animation
+            this.tweens.add({
+                targets: display,
+                alpha: { from: 0.7, to: 0.3 },
+                duration: Phaser.Math.Between(800, 1500),
+                yoyo: true,
+                repeat: -1,
+                ease: 'Power2'
+            });
+        });
+        
+        // Energy conduits along walls
+        const conduitData = [
+            // Horizontal conduits
+            { x: this.mapWidth/2, y: 100, width: this.mapWidth - 200, height: 8 },
+            { x: this.mapWidth/2, y: this.mapHeight - 100, width: this.mapWidth - 200, height: 8 },
+            // Vertical conduits
+            { x: 100, y: this.mapHeight/2, width: 8, height: this.mapHeight - 200 },
+            { x: this.mapWidth - 100, y: this.mapHeight/2, width: 8, height: this.mapHeight - 200 }
+        ];
+        
+        conduitData.forEach(conduit => {
+            const pipe = this.add.rectangle(conduit.x, conduit.y, conduit.width, conduit.height, this.SPACE_COLORS.ACCENT_PURPLE, 0.6);
+            
+            // Add energy flow animation
+            this.tweens.add({
+                targets: pipe,
+                alpha: { from: 0.6, to: 1 },
+                duration: 1000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        });
+        
+        // Add floating data crystals in central hub
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const radius = 120;
+            const crystalX = this.mapWidth/2 + Math.cos(angle) * radius;
+            const crystalY = this.mapHeight/2 + Math.sin(angle) * radius;
+            
+            const crystal = this.add.polygon(crystalX, crystalY, [
+                [0, -8], [8, -4], [8, 4], [0, 8], [-8, 4], [-8, -4]
+            ], this.SPACE_COLORS.DECORATION_PINK, 0.8);
+            
+            // Floating animation
+            this.tweens.add({
+                targets: crystal,
+                y: crystalY - 10,
+                duration: 2000 + i * 200,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+            
+            // Rotation animation
+            this.tweens.add({
+                targets: crystal,
+                rotation: Math.PI * 2,
+                duration: 4000 + i * 300,
+                repeat: -1,
+                ease: 'Linear'
+            });
+        }
     }
     
     createPlayer() {
-        // Create space explorer player with glowing effect
-        this.player = this.add.rectangle(
-            this.cameras.main.centerX, 
-            200, 
-            PLAYER_SIZE, 
-            PLAYER_SIZE, 
-            this.SPACE_COLORS.PLAYER
-        );
+        // Create space explorer player with modern design
+        this.player = this.add.circle(this.mapWidth/2, this.mapHeight/2 + 80, 12, this.SPACE_COLORS.PLAYER);
         
-        // Add glowing effect to player
-        const playerGlow = this.add.rectangle(
-            this.cameras.main.centerX, 
-            200, 
-            PLAYER_SIZE + 10, 
-            PLAYER_SIZE + 10, 
-            this.SPACE_COLORS.PLAYER,
-            0.3
-        );
+        // Add player glow effect
+        const playerGlow = this.add.circle(this.mapWidth/2, this.mapHeight/2 + 80, 18, this.SPACE_COLORS.PLAYER, 0.3);
         
-        // Add physics to the player
+        // Add subtle pulsing animation to player
+        this.tweens.add({
+            targets: [this.player, playerGlow],
+            scaleX: { from: 1, to: 1.1 },
+            scaleY: { from: 1, to: 1.1 },
+            duration: 1500,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+        
+        // Enable physics for the player
         this.physics.add.existing(this.player);
         this.player.body.setCollideWorldBounds(true);
+        this.player.body.setDrag(300, 300);
         
-        // Make glow follow player
-        this.playerGlow = playerGlow;
-        
-        // Set up collisions
-        
+        // Player-wall collision
+        this.physics.add.collider(this.player, this.walls);
     }
     
     setupControls() {
-        // Create cursor keys
+        // Set up keyboard controls
         this.cursors = this.input.keyboard.createCursorKeys();
-        
-        // Create WASD keys
         this.wasd = this.input.keyboard.addKeys('W,S,A,D');
         
-        // Create interaction key (E)
-        this.interactKey = this.input.keyboard.addKey('E');
-        
-        // Add escape key to return to menu
+        // ESC key to return to main menu
         this.input.keyboard.on('keydown-ESC', () => {
             this.scene.start(SCENES.MAIN_MENU);
         });
+        
+        // E key for interactions
+        this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    }
+    
+    createUI() {
+        // Create fixed UI elements
+        const uiContainer = this.add.container(0, 0);
+        uiContainer.setScrollFactor(0);
+        uiContainer.setDepth(100);
+        
+        // Mini-map background
+        const miniMapBg = this.add.rectangle(120, 80, 200, 150, this.SPACE_COLORS.UI_PANEL, 0.8);
+        miniMapBg.setStrokeStyle(2, this.SPACE_COLORS.BUTTON_PRIMARY);
+        uiContainer.add(miniMapBg);
+        
+        // Mini-map title
+        const miniMapTitle = this.add.text(120, 20, '📡 Station Map', {
+            fontSize: '14px',
+            fontFamily: 'Arial',
+            color: this.SPACE_COLORS.TEXT_PRIMARY,
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+        uiContainer.add(miniMapTitle);
+        
+        // Control instructions
+        const controls = this.add.text(
+            this.cameras.main.width - 20,
+            20,
+            '🎮 Controls:\nArrow Keys / WASD - Move\nE - Interact with Airlocks\nESC - Return to Menu',
+            {
+                fontSize: '12px',
+                fontFamily: 'Arial',
+                color: this.SPACE_COLORS.TEXT_SECONDARY,
+                align: 'right',
+                backgroundColor: this.SPACE_COLORS.UI_PANEL,
+                padding: { x: 10, y: 8 }
+            }
+        ).setOrigin(1, 0);
+        uiContainer.add(controls);
+        
+        // Current location indicator
+        this.locationText = this.add.text(
+            this.cameras.main.width/2,
+            this.cameras.main.height - 40,
+            '📍 Current Location: Central Hub',
+            {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: this.SPACE_COLORS.TEXT_PRIMARY,
+                fontStyle: 'bold',
+                backgroundColor: this.SPACE_COLORS.UI_PANEL,
+                padding: { x: 15, y: 8 }
+            }
+        ).setOrigin(0.5);
+        this.locationText.setStroke(this.SPACE_COLORS.BUTTON_PRIMARY, 2);
+        uiContainer.add(this.locationText);
     }
     
     setupInteractions() {
@@ -654,16 +855,29 @@ class ClassroomScene extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.doors, (player, door) => {
             this.showInteractionPrompt(door);
         });
+        
+        // Handle interaction input
+        this.eKey.on('down', () => {
+            this.handleInteraction();
+        });
     }
     
     showInteractionPrompt(door) {
         const promptKey = door.roomType;
         
+        // Remove existing prompt if different door
+        if (this.currentInteractionDoor && this.currentInteractionDoor !== door) {
+            this.hideInteractionPrompt();
+        }
+        
+        this.currentInteractionDoor = door;
+        
+        // Create or update interaction prompt
         if (!this.interactionPrompts[promptKey]) {
-            this.interactionPrompts[promptKey] = this.add.text(
+            const promptText = this.add.text(
                 door.x,
-                door.y - 30,
-                `Press E to enter ${door.roomLabel}`,
+                door.y - 40,
+                `🚪 Press E to enter ${door.roomLabel}`,
                 {
                     fontSize: '14px',
                     fontFamily: 'Arial',
@@ -671,228 +885,182 @@ class ClassroomScene extends Phaser.Scene {
                     backgroundColor: this.SPACE_COLORS.UI_PANEL,
                     padding: { x: 8, y: 4 }
                 }
-            ).setOrigin(0.5).setDepth(100);
+            ).setOrigin(0.5);
             
-            // Add glowing effect to prompt
-            this.interactionPrompts[promptKey].setStroke(this.SPACE_COLORS.BUTTON_PRIMARY, 1);
+            promptText.setStroke(this.SPACE_COLORS.BUTTON_PRIMARY, 2);
+            promptText.setDepth(50);
             
             // Add pulsing animation
             this.tweens.add({
-                targets: this.interactionPrompts[promptKey],
-                alpha: { from: 1, to: 0.7 },
+                targets: promptText,
+                scaleX: { from: 1, to: 1.1 },
+                scaleY: { from: 1, to: 1.1 },
                 duration: 800,
                 yoyo: true,
                 repeat: -1,
                 ease: 'Sine.easeInOut'
             });
+            
+            this.interactionPrompts[promptKey] = promptText;
         }
         
-        // Check for interaction
-        if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
-            this.enterRoom(door.roomType);
+        this.interactionPrompts[promptKey].setVisible(true);
+    }
+    
+    hideInteractionPrompt() {
+        Object.values(this.interactionPrompts).forEach(prompt => {
+            prompt.setVisible(false);
+        });
+        this.currentInteractionDoor = null;
+    }
+    
+    handleInteraction() {
+        if (this.currentInteractionDoor) {
+            const roomType = this.currentInteractionDoor.roomType;
+            
+            // Show entering animation
+            this.showEnteringAnimation(roomType);
+            
+            // Transition to specific room scene
+            this.time.delayedCall(1000, () => {
+                this.scene.start(this.getRoomScene(roomType));
+            });
         }
     }
     
-    hideInteractionPrompt(roomType) {
-        if (this.interactionPrompts[roomType]) {
-            this.interactionPrompts[roomType].destroy();
-            delete this.interactionPrompts[roomType];
-        }
-    }
-    
-    enterRoom(roomType) {
-        // Hide all interaction prompts
-        Object.keys(this.interactionPrompts).forEach(key => {
-            this.hideInteractionPrompt(key);
+    showEnteringAnimation(roomType) {
+        // Create entering effect
+        const overlay = this.add.rectangle(
+            this.cameras.main.centerX,
+            this.cameras.main.centerY,
+            this.cameras.main.width,
+            this.cameras.main.height,
+            this.SPACE_COLORS.DOOR,
+            0
+        );
+        overlay.setScrollFactor(0);
+        overlay.setDepth(200);
+        
+        // Animate overlay
+        this.tweens.add({
+            targets: overlay,
+            alpha: 0.8,
+            duration: 500,
+            ease: 'Power2.easeIn'
         });
         
-        // Navigate to specific room scene based on room type
-        switch(roomType) {
-            case 'ai_ml':
-                this.scene.start(SCENES.AI_ML_LAB);
-                break;
-            case 'networking':
-                this.scene.start(SCENES.NETWORKING_CENTER);
-                break;
-            case 'library':
-                this.scene.start(SCENES.LIBRARY);
-                break;
-            case 'computer_lab':
-                this.scene.start(SCENES.COMPUTER_LAB);
-                break;
-            default:
-                console.log(`Unknown room type: ${roomType}`);
-        }
-    }
-    
-    createUI() {
-        // Create status panel
-        const statusPanel = this.add.rectangle(
-            this.cameras.main.width - 150,
-            30,
-            280,
-            60,
-            this.SPACE_COLORS.UI_PANEL,
-            0.9
-        );
-        statusPanel.setDepth(50);
-        
-        // Add status text
-        this.statusText = this.add.text(
-            this.cameras.main.width - 150,
-            20,
-            '🚀 Space Explorer Status',
+        // Show entering text
+        const enteringText = this.add.text(
+            this.cameras.main.centerX,
+            this.cameras.main.centerY,
+            `🚀 Entering ${this.currentInteractionDoor.roomLabel}...`,
             {
-                fontSize: '14px',
+                fontSize: '24px',
                 fontFamily: 'Arial',
                 color: this.SPACE_COLORS.TEXT_PRIMARY,
                 fontStyle: 'bold'
             }
-        ).setOrigin(0.5).setDepth(51);
+        ).setOrigin(0.5);
+        enteringText.setScrollFactor(0);
+        enteringText.setDepth(201);
         
-        this.locationText = this.add.text(
-            this.cameras.main.width - 150,
-            40,
-            '📍 Main Corridor',
-            {
-                fontSize: '12px',
-                fontFamily: 'Arial',
-                color: this.SPACE_COLORS.TEXT_SECONDARY
-            }
-        ).setOrigin(0.5).setDepth(51);
+        // Animate text
+        this.tweens.add({
+            targets: enteringText,
+            scaleX: { from: 0, to: 1 },
+            scaleY: { from: 0, to: 1 },
+            duration: 500,
+            ease: 'Back.easeOut'
+        });
+    }
+    
+    getRoomScene(roomType) {
+        const sceneMap = {
+            'ai_ml': SCENES.AI_ML_LAB,
+            'networking': SCENES.NETWORKING,
+            'library': SCENES.LIBRARY,
+            'computer_lab': SCENES.COMPUTER_LAB
+        };
         
-        // Create control hints
-        const controlsPanel = this.add.rectangle(
-            150,
-            this.cameras.main.height - 40,
-            280,
-            60,
-            this.SPACE_COLORS.UI_PANEL,
-            0.9
-        );
-        controlsPanel.setDepth(50);
-        
-        this.add.text(
-            150,
-            this.cameras.main.height - 50,
-            '🎮 Controls: WASD/Arrow Keys to move',
-            {
-                fontSize: '12px',
-                fontFamily: 'Arial',
-                color: this.SPACE_COLORS.TEXT_SECONDARY
-            }
-        ).setOrigin(0.5).setDepth(51);
-        
-        this.add.text(
-            150,
-            this.cameras.main.height - 30,
-            '⌨️ E to interact • ESC to return to menu',
-            {
-                fontSize: '12px',
-                fontFamily: 'Arial',
-                color: this.SPACE_COLORS.TEXT_SECONDARY
-            }
-        ).setOrigin(0.5).setDepth(51);
+        return sceneMap[roomType] || SCENES.MAIN_MENU;
     }
     
     update() {
+        if (!this.player) return;
+        
         // Handle player movement
         this.handlePlayerMovement();
         
-        // Update player glow position
-        if (this.playerGlow) {
-            this.playerGlow.x = this.player.x;
-            this.playerGlow.y = this.player.y;
-        }
+        // Update location text based on player position
+        this.updateLocationText();
         
-        // Check if player is near any doors
-        let nearDoor = false;
-        this.doors.children.entries.forEach(door => {
-            const distance = Phaser.Math.Distance.Between(
-                this.player.x, this.player.y,
-                door.x, door.y
-            );
-            
-            if (distance < 50) {
-                nearDoor = true;
-                this.showInteractionPrompt(door);
-            } else {
-                this.hideInteractionPrompt(door.roomType);
-            }
-        });
+        // Check if player is away from doors to hide prompts
+        this.checkInteractionDistance();
     }
     
-    addSpaceDecorations() {
-        // Add floating platforms and space debris
-        const decorations = [
-            { x: 400, y: 120, color: this.SPACE_COLORS.PLATFORM_GREEN },
-            { x: 700, y: 120, color: this.SPACE_COLORS.PLATFORM_GREEN },
-            { x: 400, y: 320, color: this.SPACE_COLORS.PLATFORM_GREEN },
-            { x: 700, y: 320, color: this.SPACE_COLORS.PLATFORM_GREEN }
-        ];
-        
-        decorations.forEach(deco => {
-            const platform = this.add.rectangle(deco.x, deco.y, 80, 15, deco.color);
-            
-            // Add floating animation
-            this.tweens.add({
-                targets: platform,
-                y: deco.y + 5,
-                duration: 2000,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
-        });
-        
-        // Add energy crystals (using circles instead of polygons to avoid parameter issues)
-        for (let i = 0; i < 10; i++) {
-            const crystal = this.add.circle(
-                Phaser.Math.Between(100, this.cameras.main.width - 100),
-                Phaser.Math.Between(100, this.cameras.main.height - 100),
-                6,
-                this.SPACE_COLORS.DECORATION_PINK,
-                0.6
-            );
-            
-            // Add pulsing effect
-            this.tweens.add({
-                targets: crystal,
-                scaleX: { from: 1, to: 1.3 },
-                scaleY: { from: 1, to: 1.3 },
-                alpha: { from: 0.6, to: 0.3 },
-                duration: 2000,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
-        }
-    }
-
     handlePlayerMovement() {
-        const speed = 160;
-        
-        // Reset velocity
-        this.player.body.setVelocity(0);
+        const speed = 200;
+        let velocityX = 0;
+        let velocityY = 0;
         
         // Horizontal movement
         if (this.cursors.left.isDown || this.wasd.A.isDown) {
-            this.player.body.setVelocityX(-speed);
+            velocityX = -speed;
         } else if (this.cursors.right.isDown || this.wasd.D.isDown) {
-            this.player.body.setVelocityX(speed);
+            velocityX = speed;
         }
         
         // Vertical movement
         if (this.cursors.up.isDown || this.wasd.W.isDown) {
-            this.player.body.setVelocityY(-speed);
+            velocityY = -speed;
         } else if (this.cursors.down.isDown || this.wasd.S.isDown) {
-            this.player.body.setVelocityY(speed);
+            velocityY = speed;
         }
         
-        // Normalize diagonal movement
-        if (this.player.body.velocity.x !== 0 && this.player.body.velocity.y !== 0) {
-            this.player.body.velocity.x *= 0.7;
-            this.player.body.velocity.y *= 0.7;
+        // Apply movement
+        this.player.body.setVelocity(velocityX, velocityY);
+    }
+    
+    updateLocationText() {
+        const playerX = this.player.x;
+        const playerY = this.player.y;
+        
+        let currentLocation = 'Central Hub';
+        
+        // Check if player is in specific areas
+        if (playerX > 300 && playerX < 500 && playerY > 300 && playerY < 450) {
+            currentLocation = 'AI/ML Laboratory';
+        } else if (playerX > this.mapWidth - 500 && playerX < this.mapWidth - 300 && playerY > 300 && playerY < 450) {
+            currentLocation = 'Network Center';
+        } else if (playerX > 300 && playerX < 500 && playerY > this.mapHeight - 450 && playerY < this.mapHeight - 300) {
+            currentLocation = 'Digital Library';
+        } else if (playerX > this.mapWidth - 500 && playerX < this.mapWidth - 300 && playerY > this.mapHeight - 450 && playerY < this.mapHeight - 300) {
+            currentLocation = 'Computer Laboratory';
+        } else if (playerX > 180 && playerX < this.mapWidth - 180 && 
+                  (playerY > 200 && playerY < 280 || playerY > this.mapHeight - 280 && playerY < this.mapHeight - 200 ||
+                   playerY > this.mapHeight/2 - 40 && playerY < this.mapHeight/2 + 40)) {
+            currentLocation = 'Main Corridor';
+        } else if (playerY > 180 && playerY < this.mapHeight - 180 && 
+                  (playerX > 200 && playerX < 280 || playerX > this.mapWidth - 280 && playerX < this.mapWidth - 200 ||
+                   playerX > this.mapWidth/2 - 40 && playerX < this.mapWidth/2 + 40)) {
+            currentLocation = 'Main Corridor';
+        }
+        
+        if (this.locationText) {
+            this.locationText.setText(`📍 Current Location: ${currentLocation}`);
+        }
+    }
+    
+    checkInteractionDistance() {
+        if (this.currentInteractionDoor) {
+            const distance = Phaser.Math.Distance.Between(
+                this.player.x, this.player.y,
+                this.currentInteractionDoor.x, this.currentInteractionDoor.y
+            );
+            
+            if (distance > 80) {
+                this.hideInteractionPrompt();
+            }
         }
     }
 }
